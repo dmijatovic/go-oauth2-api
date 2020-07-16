@@ -24,9 +24,9 @@ services:
   oauth:
     container_name: oauth
     build: .
-    image: dv4all/go-oauth:0.5.0-alpine3.12
-    # expose:
-    #   - "5433"
+    image: dv4all/go-oauth:0.6.0-alpine3.12
+    env_file:
+      - ./oauth2.env
     ports:
       - "8080:8080"
     networks:
