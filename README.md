@@ -16,6 +16,51 @@ This results in the images with minimal footprint:
 
 I did [similair approach with NodeJS](https://github.com/dmijatovic/ts-polka-oauth) using Polka web server and PotsgreSQL. The footpring of NodeJS solution is larger. The minimum image size I achived is 40MB for web server. In the NodeJS solution I also used NGINX as reverse proxy and potentialy as SSL provider. For Go it seems that all can be implemented within Go which I plan to do later :-).
 
+## Requirements
+
+This module depends on Postgres database. The postgres container is included in the docker-compose file of dv4food project. The database connection parameters are defined in oauth2.env file.
+
+### Users table
+
+This module expects users table with the following structure. The table is defined in init.sql of postgres folder. The inital user created is `demo.user@gmail.com` and the password is `password`.
+
+```sql
+CREATE TABLE users (
+  id uuid DEFAULT public.uuid_generate_v4(),
+  roles character varying(100) NOT NULL,
+  first_name character varying(100) NOT NULL,
+  last_name character varying(100) NOT NULL,
+  email character varying(100) NOT NULL CHECK (length(email)>5),
+  password character varying(255) NOT NULL CHECK (length(password)>5),
+  birth_date date NOT NULL,
+  createdate date DEFAULT CURRENT_DATE NOT NULL,
+  PRIMARY KEY (email)
+);
+```
+
+## Environment variables
+
+All required settings are included in env file oauth2.env which are used by docker-compose. In the code specific default values are defined.
+
+```env
+# go oauth2
+OAUTH2_HOST=:8080
+
+# postgres db
+PG_HOST=pgdb
+PG_PORT=5432
+PG_USER=postgres
+PG_PASS=changeme
+PG_DB=oauth_db
+
+# jwt
+JWT_EXP_TIME_SEC=120
+JWT_KEY=01545c0cdd271a8177bea35d4d4b0517
+
+#bcrypt
+SALT_ROUNDS=7
+```
+
 ## Usage
 
 This server can be used via docker-compose file.
@@ -25,7 +70,16 @@ This server can be used via docker-compose file.
 
 For more information about the setup and the project itself see the rest of README.
 
-## Module stucture
+### API points
+
+The following api points are available (by default on localhost:8080).
+
+- `\` (GET): home route with simple static html
+- `\login` (POST): login route defined in routes\login.go file
+- `\verify` (GET,POST): jwt verification point
+- `\users` (GET,POST,PUT,DELETE): CRUD user management. Protected routes. Defined in `routes\users.go` file
+
+## Folder stucture
 
 There are some ideas about MVC structure but I am inclined using a custom structure:
 
@@ -33,8 +87,10 @@ There are some ideas about MVC structure but I am inclined using a custom struct
 - password: module resposible for hashing the passwords. bcrypt is used.
 - pgdb: module responsible for postgres database connection and models
 - postgres: folder for Postgres Docker container definitions
+- response: defines api response structure
 - routes module: container routes and calls appropriate method in models
 - token: module for signing and verifying JWT.
+- utils: utility functions. Currently only one for extracting env variables.
 - views: static index.html page for root of the api
 
 ## Dependencies
