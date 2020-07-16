@@ -24,8 +24,8 @@ func handleUsers(res http.ResponseWriter, req *http.Request) {
 		addNewUser(req, res)
 	case "PUT":
 		updateUser(req, res)
-	case "PATCH":
-		updateUser(req, res)
+	// case "PATCH":
+	// 	updateUser(req, res)
 	case "DELETE":
 		deleteUser(req, res)
 	default:

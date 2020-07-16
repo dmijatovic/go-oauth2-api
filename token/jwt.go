@@ -1,13 +1,19 @@
 package token
 
 import (
+	"strconv"
 	"time"
+
+	"dv4all/goauth2/utils"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-var privateKey = []byte("ThisISMyPivateTestSigningKey12312312")
-var expTime time.Duration = 60 * time.Second
+// privateKey for signing tokens
+var privateKey []byte
+
+// token expiration time in seconds
+var expTimeSec int
 
 // UserClaims to be included in the JWT.
 type UserClaims struct {
@@ -24,6 +30,15 @@ type CustomClaims struct {
 	jwt.StandardClaims
 }
 
+func getExpiresAt() int64 {
+	// var expTime time.Duration
+	if expTimeSec == 0 {
+		expTimeSec, _ = strconv.Atoi(utils.GetEnv("JWT_EXP_TIME_SEC", "120"))
+	}
+	expTime := time.Duration(expTimeSec) * time.Second
+	return time.Now().Add(expTime).Unix()
+}
+
 // SetData for CustomClaims and Standard JWT claims
 func (cc *CustomClaims) SetData(d UserClaims) {
 	//custom user profile claims
@@ -33,7 +48,7 @@ func (cc *CustomClaims) SetData(d UserClaims) {
 	cc.Id = d.ID
 	cc.IssuedAt = time.Now().Unix()
 	//calculate expiration time
-	cc.ExpiresAt = time.Now().Add(expTime).Unix()
+	cc.ExpiresAt = getExpiresAt()
 	cc.Issuer = "dv4all-oauth2-go-service"
 	cc.Subject = d.FirstName + " " + d.LastName
 }
@@ -44,17 +59,26 @@ func (cc *CustomClaims) SetData(d UserClaims) {
 // DO NOT SEND secrity related information (like password) in the data
 func Sign(claims CustomClaims) (string, error) {
 	// log.Println("clams...", claims)
-
 	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := newToken.SignedString(privateKey)
+	key := getPrivateKey()
+	token, err := newToken.SignedString(key)
 	if err != nil {
 		return "", err
 	}
 	return token, nil
 }
 
+func getPrivateKey() []byte {
+	if len(privateKey) == 0 {
+		key := utils.GetEnv("JWT_KEY", "01545c0cdd271a8177bea35d4d4b0517")
+		privateKey = []byte(key)
+		return privateKey
+	}
+	return privateKey
+}
+
 func myKey(token *jwt.Token) (interface{}, error) {
-	return privateKey, nil
+	return getPrivateKey(), nil
 }
 
 // Verify will check if token is valid and return true/false and error message
@@ -73,7 +97,6 @@ func Verify(tokenStr string) (bool, string) {
 			return false, "Token expired"
 		}
 		return false, "Invalid token"
-	} else {
-		return false, "Invalid token"
 	}
+	return false, "Invalid token"
 }
