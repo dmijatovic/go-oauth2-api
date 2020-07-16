@@ -16,13 +16,31 @@ This results in the images with minimal footprint:
 
 I did [similair approach with NodeJS](https://github.com/dmijatovic/ts-polka-oauth) using Polka web server and PotsgreSQL. The footpring of NodeJS solution is larger. The minimum image size I achived is 40MB for web server. In the NodeJS solution I also used NGINX as reverse proxy and potentialy as SSL provider. For Go it seems that all can be implemented within Go which I plan to do later :-).
 
+## Usage
+
+This server can be used via docker-compose file.
+
+`docker-compose up -d` to run server on localhost:8080 in detached mode.
+`docker-compose down` to stop the service.
+
+For more information about the setup and the project itself see the rest of README.
+
+### API points
+
+The following api points are available (by default on localhost:8080).
+
+- `\` (GET): home route with simple static html
+- `\login` (POST): login route defined in routes\login.go file
+- `\verify` (GET,POST): jwt verification point
+- `\users` (GET,POST,PUT,DELETE): CRUD user management. Protected routes. Defined in `routes\users.go` file
+
 ## Requirements
 
-This module depends on Postgres database. The postgres container is included in the docker-compose file of dv4food project. The database connection parameters are defined in oauth2.env file.
+This module depends on Postgres database. The postgres container is included in the docker-compose file. User table is created on initialization of postgres container. The database connection parameters are defined in oauth2.env file. Defaults should work out-of-the-box when using docker-compose file.
 
 ### Users table
 
-This module expects users table with the following structure. The table is defined in init.sql of postgres folder. The inital user created is `demo.user@gmail.com` and the password is `password`.
+This module expects users table with the structure as defined below. The table is defined in init.sql of postgres folder. The inital user is `demo.user@gmail.com` and the password is `password`. Note that password value is hashed using bcrypt.
 
 ```sql
 CREATE TABLE users (
@@ -40,7 +58,7 @@ CREATE TABLE users (
 
 ## Environment variables
 
-All required settings are included in env file oauth2.env which are used by docker-compose. In the code specific default values are defined.
+All required settings are included in env file oauth2.env and are used by docker-compose. In the app code default values are defined which are equal to values shown here.
 
 ```env
 # go oauth2
@@ -60,24 +78,6 @@ JWT_KEY=01545c0cdd271a8177bea35d4d4b0517
 #bcrypt
 SALT_ROUNDS=7
 ```
-
-## Usage
-
-This server can be used via docker-compose file.
-
-`docker-compose up -d` to run server on localhost:8080 in detached mode.
-`docker-compose down` to stop the service.
-
-For more information about the setup and the project itself see the rest of README.
-
-### API points
-
-The following api points are available (by default on localhost:8080).
-
-- `\` (GET): home route with simple static html
-- `\login` (POST): login route defined in routes\login.go file
-- `\verify` (GET,POST): jwt verification point
-- `\users` (GET,POST,PUT,DELETE): CRUD user management. Protected routes. Defined in `routes\users.go` file
 
 ## Folder stucture
 
