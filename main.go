@@ -1,26 +1,32 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
+	"time"
 
 	"dv4all/goauth2/pgdb"
 	"dv4all/goauth2/routes"
+	"dv4all/goauth2/utils"
 )
 
-// ENV VARIABLES
-var apiHost string = "0.0.0.0:8080"
-var pgHost string = "pgdb"
-var pgPort int = 5432
-var pgUser string = "postgres"
-var pgPass string = "changeme"
-var pgDb string = "auth_db"
+// AppName holds application name
+var AppName string
 
-func main() {
-	log.Println("Starting...", apiHost)
-	// create new router
-	mux := routes.Register()
-
+// connection to postgres
+func oauth2DB() *sql.DB {
+	// get connection props from environment
+	pgHost := utils.GetEnv("PG_HOST", "localhost")
+	pgPort, _ := strconv.Atoi(utils.GetEnv("PG_PORT", "5432"))
+	pgUser := utils.GetEnv("PG_USER", "postgres")
+	pgPass := utils.GetEnv("PG_PASS", "changeme")
+	pgDb := utils.GetEnv("PG_DB", "oauth_db")
 	// connect to postgres database
 	cnnStr := pgdb.ConnectionStr(pgdb.Settings{
 		Host:     pgHost,
@@ -32,8 +38,75 @@ func main() {
 	// println(cnnStr)
 	db := pgdb.Connect(cnnStr)
 	//close connection at the end
-	defer db.Close()
+	return db
+}
 
-	//start server and register router
-	log.Fatal(http.ListenAndServe(apiHost, mux))
+// start http server
+func oauth2HTTP() *http.Server {
+	// get host url and port
+	apiHost := utils.GetEnv("OAUTH2_HOST", ":8080")
+	// create new router
+	mux := routes.Register()
+	// create https server
+	srv := &http.Server{
+		Addr:         apiHost,
+		Handler:      mux,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 20 * time.Second,
+	}
+	log.Printf("%v...starting on...%v", AppName, apiHost)
+	return srv
+}
+
+// shutdown http server
+func shutdownServer(db *sql.DB, api *http.Server) {
+	if db != nil {
+		log.Println("sqlDB...closing...")
+		edb := db.Close()
+		if edb != nil {
+			log.Printf("sqlDB.Close() failed: %v", edb)
+		}
+	}
+	if api != nil {
+		log.Println("http...closing...")
+		err := api.Shutdown(context.Background())
+		if err != nil {
+			log.Printf("http closing failed: %v", err)
+		}
+	}
+	log.Printf("%v...stopped", AppName)
+}
+
+// Listen for system close events
+func onCloseAPI(close chan bool) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	// wait for sigs
+	log.Printf("os.Signal...%v", <-sigs)
+	// os signal send notify others now
+	close <- true
+}
+
+func main() {
+	// load AppName
+	AppName = utils.GetEnv("OAUTH2_NAME", "go-oauth2-api")
+	// create close channel
+	close := make(chan bool, 1)
+	//connect to database
+	db := oauth2DB()
+	//start api on http
+	api := oauth2HTTP()
+	//run api in separate routine
+	go func(api *http.Server) {
+		err := api.ListenAndServe()
+		if err != nil {
+			log.Fatalf("%v server failed: %v", AppName, err)
+		}
+	}(api)
+	//listen for close events
+	go onCloseAPI(close)
+	//wait for close event
+	<-close
+	//close DB and api
+	shutdownServer(db, api)
 }
