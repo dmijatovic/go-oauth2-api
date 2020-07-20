@@ -34,6 +34,14 @@ The following api points are available (by default on localhost:8080).
 - `\verify` (GET,POST): jwt verification point
 - `\users` (GET,POST,PUT,DELETE): CRUD user management. Protected routes. Defined in `routes\users.go` file
 
+### CI/CD
+
+This project uses Github actions for e2e testing and building Docker container.
+
+Every push to master branch (or pull request) will run cypress e2e test.
+
+To publish new version to Docker Hub push to docker branch to run docker action.
+
 ## Requirements
 
 This module depends on Postgres database. The postgres container is included in the docker-compose file. User table is created on initialization of postgres container. The database connection parameters are defined in oauth2.env file. Defaults should work out-of-the-box when using docker-compose file.
@@ -150,13 +158,10 @@ We deploy using Docker and docker-compose. Go app is build using Dockerfile in t
 First version of compiled app was about 9MB size.
 
 ```bash
-
 # build go app
 go build -o=goauth2
-
 # build Dockerfile
 docker build . -t dv4all/go-oauth:0.0.1
-
 ```
 
 ### Go modules
