@@ -31,6 +31,9 @@ jobs:
     - name: Print docker-compose version
       run: docker-compose --version
 
+    - name: Print docker-compose version
+      run: docker-compose -f docker-compose-test.yml up --exit-code-from cypress
+
     # - name: list current dir
     #   run: docker-compose up
     # Runs a set of commands using the runners shell
