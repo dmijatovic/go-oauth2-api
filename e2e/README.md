@@ -5,10 +5,6 @@ This folder holds e2e tests of oauth2. The tests are automated with Cypress. The
 The test should be runned in docker containers using docker-compose.
 
 ```bash
-# go to e2e folder
-cd e2e
-# run docker compose and use cypress exit code
-docker-compose up --exit-code-from cypress
 # run from the root of the project
-docker-compose -f docker-compose-test.yml up --exit-code-from cypress
+docker-compose -f docker-compose-e2e.yml up --exit-code-from cypress
 ```
