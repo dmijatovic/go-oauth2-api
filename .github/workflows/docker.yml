@@ -22,12 +22,12 @@ jobs:
     - name: Print docker version
       run: docker-compose --version
 
-    - name: Run e2e tests using cypress
-      run: docker-compose -f docker-compose-e2e.yml up --exit-code-from cypress
+    # - name: Run e2e tests using cypress
+    #   run: docker-compose -f docker-compose-e2e.yml up --exit-code-from cypress
 
     - name: Build and publish to DockerHub
       run: |
-        VERSION = $(date +%s)
+        export VERSION=$(date +%s)
         docker build . -t dv4all/go-oauth:${VERSION}
         docker login -u ${{secrets.DOCKER_USER}} -p ${{secrets.DOCKER_PASS}}
         docker push dv4all/go-oauth:${VERSION}
