@@ -83,6 +83,7 @@ SALT_ROUNDS=7
 
 There are some ideas about MVC structure but I am inclined using a custom structure:
 
+- e2e: end-to-end testing with cypress using docker-compose-test.yml
 - logger: basic logger middleware to log request
 - password: module resposible for hashing the passwords. bcrypt is used.
 - pgdb: module responsible for postgres database connection and models
@@ -107,7 +108,7 @@ go get github.com/dgrijalva/jwt-go
 
 ```
 
-## Go "quirks"
+## Golang remarks/learnings
 
 - json backticks definitions need to be enclosed with "" and no spaces between `json:` and value.
 

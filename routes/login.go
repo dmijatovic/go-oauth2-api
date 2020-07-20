@@ -54,7 +54,7 @@ func getCredentialsFromBody(req *http.Request, res http.ResponseWriter) (LoginCr
 		//exit
 		return cred, err
 	}
-	log.Println("getCredentialsFromBody...", cred)
+
 	return cred, nil
 }
 

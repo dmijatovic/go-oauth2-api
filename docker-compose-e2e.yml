@@ -7,7 +7,7 @@ services:
     image: "postgres:alpine"
     env_file:
       # configure postgres
-      - ../postgres/database.env
+      - ./postgres/database.env
     expose:
       # only avaliable in docker network
       # needed for food_api connection
@@ -16,17 +16,17 @@ services:
       # persist data even if container shuts down
       # - auth_data:/var/lib/postgresql/data/
       # run init sql script to create tables
-      - ../postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - net
     restart: on-failure
 
   oauth:
     container_name: oauth
-    build: ../
+    build: ./
     image: dv4all/go-oauth:0.6.0-alpine3.12
     env_file:
-      - ../oauth2.env
+      - ./oauth2.env
     # ports:
     #   - "8080:8080"
     expose:
@@ -48,7 +48,7 @@ services:
       - CYPRESS_baseUrl=http://oauth:8080
     volumes:
       # copy all from current dir into cypress container to e2e folder
-      - ./:/e2e
+      - ./e2e:/e2e
     # Cypress treats the /e2e directory as its current folder in the filesystem
     working_dir: /e2e
     networks:
