@@ -29,5 +29,5 @@ jobs:
       run: |
         export VERSION=$(date +%s)
         docker build . -t dv4all/go-oauth:${VERSION}
-        docker login -u ${{secrets.DOCKER_USER}}  --password-stdin ${{secrets.DOCKER_PASS}}
+        docker login -u ${{secrets.DOCKER_USER}}  -p ${{secrets.DOCKER_PASS}}
         docker push dv4all/go-oauth:${VERSION}
