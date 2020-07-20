@@ -9,4 +9,6 @@ The test should be runned in docker containers using docker-compose.
 cd e2e
 # run docker compose and use cypress exit code
 docker-compose up --exit-code-from cypress
+# run from the root of the project
+docker-compose -f docker-compose-test.yml up --exit-code-from cypress
 ```

@@ -25,12 +25,14 @@ jobs:
     #- uses: cypress-io/github-action@v1.16.1
 
     # Runs a single command using the runners shell
-    - name: Run a one-line script
+    - name: Print docker version
       run: docker --version
 
-    - name: list current dir
-      run: ls -lha
+    - name: Print docker-compose version
+      run: docker-compose --version
 
+    # - name: list current dir
+    #   run: docker-compose up
     # Runs a set of commands using the runners shell
     # - name: Run a multi-line script
     #   run: |
