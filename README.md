@@ -116,6 +116,10 @@ go get github.com/dgrijalva/jwt-go
 
 ```
 
+## Versioning
+
+I use simple text file with version numbering in the form of: major.minor.patch. Version increment is manual process, therefore patch numbers wil not be accurate. The idea of semantic versioning I will follow here is: `major version change contains the breaking changes`, minor version increment when new (non-breaking) features are added, patch...heh...every time I did not forget to increment it manually.
+
 ## Golang remarks/learnings
 
 - json backticks definitions need to be enclosed with "" and no spaces between `json:` and value.
