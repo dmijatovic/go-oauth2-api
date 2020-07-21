@@ -27,7 +27,10 @@ jobs:
 
     - name: Build and publish to DockerHub
       run: |
-        export VERSION=$(date +%s)
-        docker build . -t dv4all/go-oauth:${VERSION}
-        docker login -u ${{secrets.DOCKER_USER}}  -p ${{secrets.DOCKER_PASS}}
-        docker push dv4all/go-oauth:${VERSION}
+        export MAJOR_VERSION=$(cat .version)
+        export MINOR_VERSION=$(date +%s)
+        docker build . -t dv4all/go-oauth:${MAJOR_VERSION}${MINOR_VERSION}
+        docker login -u ${{secrets.DOCKER_USER}} -p ${{secrets.DOCKER_PASS}}
+        docker push dv4all/go-oauth:${MAJOR_VERSION}${MINOR_VERSION}
+        docker tag dv4all/go-oauth:${MAJOR_VERSION}${MINOR_VERSION} dv4all/go-oauth:@latest
+        docker push dv4all/go-oauth:@latest
